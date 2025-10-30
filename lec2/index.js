@@ -6,6 +6,7 @@ console.log("Got a new Request!!");
 console.log(req.method);
 console.log(req.url);
 
+
 switch(req.url){
     case '/':
         res.writeHead(200);
