@@ -1,0 +1,24 @@
+{
+  "name": "practise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pramodpal333/node-practise.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Pramodpal333/node-practise/issues"
+  },
+  "homepage": "https://github.com/Pramodpal333/node-practise#readme",
+  "dependencies": {
+    "@types/node": "^24.9.2"
+  }
+}
