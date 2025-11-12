@@ -1,17 +1,18 @@
-const {BOOKS} = require('../models/books');
+const { eq } = require('drizzle-orm');
+const db = require('../db/index')
+const {booksTable} = require('../models/index');
+const { table } = require('console');
 
-exports.getAllBooks = function(req,res){
-     res.json(BOOKS);
+exports.getAllBooks = async function(req,res){
+    const books = await db.select().from(booksTable)
+     return res.json(books);
 }
 
 
-exports.getBookById = function(req,res){
-      const id = parseInt(req.params.id);
+exports.getBookById = async function(req,res){
+      const id = req.params.id;
 
-    if(isNaN(id))
-        return res.status(400).json({'error': 'Inavlid request, is should be a number'});
-
-    const book = BOOKS.find(e=> e.id === id);
+    const [book] = await db.select().from(booksTable).where(table => eq(table.id , id)).limit(1);
 
     if(!book)
         return res.status(404).json({'error':`Book with id ${id} not found`});
@@ -20,41 +21,32 @@ exports.getBookById = function(req,res){
 }
 
 
-exports.createBook = function(req,res){
+exports.createBook = async function(req,res){
     
     console.log(req.body);
 
-     const {title, auther} = req.body;
+     const {title, authorId,description} = req.body;
 
     if(!title || title === '')
         return res.status(400).json({error:'Title is required'});
 
-     if(!auther || auther === '')
-        return res.status(400).json({error:'Auther is required'});
+     if(!authorId || authorId === '')
+        return res.status(400).json({error:'Auther Id is required'});
 
-     const id = BOOKS.length +1;
-     const book = {id,title,auther};
-
-     BOOKS.push(book);
+     const [result] = await db.insert(booksTable).values({title,description,authorId}).returning({
+        id:booksTable.id
+     });
    
 
-     res.status(201).json({success: true,message: 'Book added sucessfully'});
+     res.status(201).json({success: true,message: 'Book added sucessfully',id:result.id});
 
 }
 
 
-exports.deleteBookById = function(req,res){
+exports.deleteBookById = async function(req,res){
     
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
 
-    if(isNaN(id))
-        return res.status(400).json({'error': 'Inavlid request, is should be a number'});
-
-    const indexToDelete = BOOKS.findIndex(e=> e.id === id);
-
-    if(indexToDelete < 0)
-        return res.status(404).json({messgae:'Book not found'});
-
-    BOOKS.splice(indexToDelete,1);
+    await db.delete(booksTable).where(eq(booksTable.id,id));
     res.json({success: true,messgae: `Book deleted of ID ${id}`});
 }
