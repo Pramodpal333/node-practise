@@ -1,9 +1,19 @@
-const { eq } = require('drizzle-orm');
+const { eq, sql } = require('drizzle-orm');
 const db = require('../db/index')
 const {booksTable} = require('../models/index');
 const { table } = require('console');
 
 exports.getAllBooks = async function(req,res){
+
+    //Search using indexing in node
+    const search = req.query.search;
+    if(search){
+        const books = await db.select().from(booksTable)
+        .where(sql`to_tsvector('english', ${booksTable.title}) @@ to_tsquery('english', ${search})`);
+
+         return res.json(books);
+    }
+
     const books = await db.select().from(booksTable)
      return res.json(books);
 }
