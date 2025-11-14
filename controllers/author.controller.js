@@ -1,6 +1,6 @@
 const { eq } = require("drizzle-orm");
 const db = require("../db/index")
-const { authorsTable } = require("../models")
+const { authorsTable, booksTable } = require("../models")
 
 
 exports.getAllAuthors = async function(req,res){
@@ -51,4 +51,11 @@ exports.deleteAuthorById = async function(req,res){
    await db.delete(authorsTable).where(eq(authorsTable.id,id));
 
     return res.json({message: `The auther with id ${id}, is deleted from DB`});
+}
+
+
+exports.getBooksByAuthor = async function(req,res){
+    const books  = await db.select().from(booksTable).where(eq(booksTable.authorId,req.params.id));
+
+    return res.json(books);
 }
