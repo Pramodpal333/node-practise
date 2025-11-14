@@ -48,7 +48,7 @@ exports.createBook = async function(req,res){
      });
    
 
-     res.status(201).json({success: true,message: 'Book added sucessfully',id:result.id});
+    return res.status(201).json({success: true,message: 'Book added sucessfully',id:result.id});
 
 }
 
@@ -58,5 +58,5 @@ exports.deleteBookById = async function(req,res){
       const id = req.params.id;
 
     await db.delete(booksTable).where(eq(booksTable.id,id));
-    res.json({success: true,messgae: `Book deleted of ID ${id}`});
+    return res.json({success: true,messgae: `Book deleted of ID ${id}`});
 }
