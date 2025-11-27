@@ -3,6 +3,7 @@ import db from "../db/index.js";
 import { userSessionsTable, usersTable } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { createHmac, randomBytes } from "crypto";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -110,13 +111,15 @@ router.post("/login", async (req, res) => {
       .json({ success: false, message: "Incorrect Password" });
   }
 
-  /// This will create a session Stroing in DB
-  const [session] = await db
-    .insert(userSessionsTable)
-    .values({ userId: existingUser.id })
-    .returning({ id: userSessionsTable.id });
+  const payload = {
+    id: existingUser.id,
+    name: existingUser.name,
+    email: existingUser.email,
+  };
 
-  return res.status(200).json({ success: true, token: session.id });
+  const token = jwt.sign(payload, process.env.JWT_SECRET);
+
+  return res.status(200).json({ success: true, token });
 });
 
 export default router;

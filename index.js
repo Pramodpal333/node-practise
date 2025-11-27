@@ -2,8 +2,7 @@ import express from "express";
 import userRouter from "./route/user.routes.js";
 import db from "./db/index.js";
 import { userSessionsTable, usersTable } from "./db/schema.js";
-
-import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -11,30 +10,29 @@ const PORT = process.env.PORT ?? 3000;
 app.use(express.json());
 
 app.use(async (req, res, next) => {
-  const sessionId = req.headers["session-id"];
+  try {
+    console.log(req.headers);
+    const sessionId = req.headers["authorization"];
 
-  if (!sessionId) {
+    console.log(sessionId);
+    if (!sessionId) {
+      return next();
+    }
+
+    if (!sessionId.includes("Bearer")) {
+      return res.status(400).json({ error: "Token does not contains Bearer" });
+    }
+
+    const token = sessionId.split(" ")[1];
+
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("This is the data in Middleware", data);
+    req.user = data;
+    return next();
+  } catch (e) {
+    console.log("Auth Failed Error: ", e.toString());
     return next();
   }
-
-  const [data] = await db
-    .select({
-      id: userSessionsTable.id,
-      userId: usersTable.id,
-      name: usersTable.name,
-      email: usersTable.id,
-    })
-    .from(userSessionsTable)
-    .rightJoin(usersTable, eq(usersTable.id, userSessionsTable.userId))
-    .where((table) => eq(table.id, sessionId));
-
-  if (!data) {
-    return next();
-  }
-
-  req.user = data;
-
-  return next();
 });
 
 app.get("/", (req, res) => {
