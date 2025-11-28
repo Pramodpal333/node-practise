@@ -4,15 +4,11 @@ import { userSessionsTable, usersTable } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { createHmac, randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
+import { verifyLoginMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.patch("/", async (req, res) => {
-  const user = req.user;
-  if (!user) {
-    return res.status(401).json({ success: false, message: "Invalid Token" });
-  }
-
+router.patch("/", verifyLoginMiddleware, async (req, res) => {
   const { name } = req.body;
 
   // Add validation to prevent "No values to set" error
@@ -30,12 +26,8 @@ router.patch("/", async (req, res) => {
   return res.json({ message: "Details Updated!" });
 });
 
-router.get("/", (req, res) => {
+router.get("/", verifyLoginMiddleware, (req, res) => {
   const user = req.user;
-
-  if (!user) {
-    return res.status(404).json({ success: false, message: "No user found" });
-  }
 
   return res.json({ user });
 });
@@ -115,6 +107,8 @@ router.post("/login", async (req, res) => {
     id: existingUser.id,
     name: existingUser.name,
     email: existingUser.email,
+    role: existingUser.role,
+    userId: existingUser.id,
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET);
