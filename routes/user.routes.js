@@ -9,7 +9,7 @@ import { usersTable } from "../models/users.model.js";
 
 import { hashPassword } from "../utils/hash.js";
 import { getUserByEmail } from "../services/user.services.js";
-import jwt from "jsonwebtoken";
+import { createUserToken } from "../utils/token.js";
 
 const router = express.Router();
 
@@ -77,15 +77,9 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Incorrect Password" });
   }
 
-  const token = jwt.sign(
-    {
-      id: exisitingUser.id,
-      email: exisitingUser.email,
-      firstName: exisitingUser.firstName,
-      lastName: exisitingUser.lastName,
-    },
-    process.env.JWT_SECRET_KEY
-  );
+  const token = await createUserToken({
+    id: exisitingUser.id,
+  });
 
   return res.status(200).json({ success: true, token });
 });
