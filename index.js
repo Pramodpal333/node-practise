@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.use(authenticateMiddleware);
 
-app.use("/", urlRoutes);
+app.use(urlRoutes);
 app.use("/users", userRoute);
 
 app.listen(PORT, () => console.log("Server is Up & Running on Port ", PORT));
