@@ -1,17 +1,11 @@
 import express from "express";
 import { urlShortenPostRequestBodySchema } from "../validation/request.validation.js";
-import { nanoid } from "nanoid";
-import db from "../db/index.js";
-import { urlTable } from "../models/url.model.js";
+import { createShortCodeAndSaveInDB } from "../services/url.services.js";
+import { ensureAuthenticated } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/shorten", async function (req, res) {
-  const userId = req.user?.id;
-
-  if (!userId)
-    return res.status(401).json({ error: "Please login to use this feature" });
-
+router.post("/shorten", ensureAuthenticated, async function (req, res) {
   const validationResult = await urlShortenPostRequestBodySchema.safeParseAsync(
     req.body
   );
@@ -21,21 +15,16 @@ router.post("/shorten", async function (req, res) {
 
   const { url } = validationResult.data;
 
-  const shortCode = nanoid(6);
-
-  const [data] = await db
-    .insert(urlTable)
-    .values({ shortCode, targetUrl: url, userId })
-    .returning({
-      id: urlTable.id,
-      targetUrl: urlTable.targetUrl,
-      shortCode: urlTable.shortCode,
-    });
+  console.log("--------->", req.user);
+  const { shortCode, targetUrl } = await createShortCodeAndSaveInDB(
+    url,
+    req.user.id
+  );
 
   return res.status(201).json({
     success: true,
-    shortcode: data.shortCode,
-    targetUrl: data.targetUrl,
+    shortCode,
+    targetUrl,
   });
 });
 
