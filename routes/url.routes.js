@@ -1,6 +1,9 @@
 import express from "express";
 import { urlShortenPostRequestBodySchema } from "../validation/request.validation.js";
-import { createShortCodeAndSaveInDB } from "../services/url.services.js";
+import {
+  createShortCodeAndSaveInDB,
+  getTargetUrlByShortCode,
+} from "../services/url.services.js";
 import { ensureAuthenticated } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -26,6 +29,14 @@ router.post("/shorten", ensureAuthenticated, async function (req, res) {
     shortCode,
     targetUrl,
   });
+});
+
+router.get("/:shortcode", async function (req, res) {
+  const shortCode = req.params.shortcode;
+
+  const { targetUrl } = await getTargetUrlByShortCode(shortCode);
+
+  return res.redirect(targetUrl);
 });
 
 export default router;
