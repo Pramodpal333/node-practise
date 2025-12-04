@@ -3,7 +3,10 @@ import { urlShortenPostRequestBodySchema } from "../validation/request.validatio
 import {
   createShortCodeAndSaveInDB,
   getTargetUrlByShortCode,
+  getAllUrlsOfUser,
+  deleteShortCodeById,
 } from "../services/url.services.js";
+
 import { ensureAuthenticated } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -29,6 +32,22 @@ router.post("/shorten", ensureAuthenticated, async function (req, res) {
     shortCode,
     targetUrl,
   });
+});
+
+router.get("/codes", ensureAuthenticated, async function (req, res) {
+  const userId = req.user.id;
+  const { codes } = await getAllUrlsOfUser(userId);
+
+  return res.json({ length: codes.length, codes });
+});
+
+router.delete("/:id", ensureAuthenticated, async function (req, res) {
+  const id = req.params.id;
+  const userId = req.user.id;
+
+  await deleteShortCodeById(id, userId);
+
+  return res.json({ deleted: true });
 });
 
 router.get("/:shortcode", async function (req, res) {

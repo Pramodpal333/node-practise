@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import db from "../db/index.js";
 import { urlTable } from "../models/url.model.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export async function createShortCodeAndSaveInDB(url, userId) {
   const shortCode = nanoid(6);
@@ -29,4 +29,21 @@ export async function getTargetUrlByShortCode(shortCode) {
     .where(eq(urlTable.shortCode, shortCode));
 
   return { targetUrl: result.targetUrl };
+}
+
+export async function getAllUrlsOfUser(userid) {
+  const codes = await db
+    .select()
+    .from(urlTable)
+    .where(eq(urlTable.userId, userid));
+
+  return { codes };
+}
+
+export async function deleteShortCodeById(codeId, userId) {
+  const result = await db
+    .delete(urlTable)
+    .where(and(eq(urlTable.id, codeId), eq(urlTable.userId, userId)));
+
+  return result;
 }
